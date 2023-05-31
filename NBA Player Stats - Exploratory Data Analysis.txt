@@ -1,4 +1,7 @@
-﻿create database nbaproject; 
+-- SQL Skills: Views, Stored Procedures, Aggregate Functions, Subqueries, etc. 
+
+
+create database nbaproject; 
 use nbaproject
 select * from all_nba_seasons;
 
