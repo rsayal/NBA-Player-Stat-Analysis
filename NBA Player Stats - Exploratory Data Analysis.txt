@@ -1,0 +1,269 @@
+﻿create database nbaproject; 
+use nbaproject
+select * from all_nba_seasons;
+
+--#1. Create a stored procedure that selects the player_name, team_abbreviation, gp, season for those NBA players played exactly 55 games during the 2007-2008 season 
+
+CREATE Procedure NBAPlayer2008 @gp int, @season varchar(50)
+as
+Select player_name, team_abbreviation, gp, season from all_nba_seasons where gp = @gp and season = @season
+
+EXEC NBAPlayer2008 @gp = 55, @season = '2007-08'
+
+GO;
+
+
+
+==#2. Create a stored procedure that selects the player_name, team_abbreviation, gp, season, draft_round for all the players who were drafted in the first round during the 2012-13 season that played more then 55 games. 
+
+Create Procedure nbaseason20122013 @season varchar(50), @draft_round int
+as 
+Select player_name, team_abbreviation, gp, season, draft_round from all_nba_seasons where season = @season and draft_round = @draft_round and gp > 55
+
+EXEC nbaseason20122013 @season = '2012-13', @draft_round = '1'
+GO
+
+
+
+
+--#3. Create a stored procedure that selects the player_name, team_abbreviation, country, draft_year, season, pts for every Canadian Born player during the 2017-2018 NBA season who scored averaged more then 10 points per game. 
+
+Create Procedure nbaseason2018 @country varchar(20), @season varchar(20)
+as 
+Select player_name, team_abbreviation, country, draft_year, season, pts from all_nba_seasons where season = @Season and country = @country and pts > 10
+
+EXEC nbaseason2018 @season = '2017-18', @country = 'Canada'
+
+GO
+
+
+
+
+
+--#4. Create a view that takes the player_name, college, draft year, draft round, draft number of the players that played on the Portland Trail Blazers during the 2015-2016 NBA season. 
+
+Create view PortlandNBAdraft as
+Select player_name, college, draft_year, draft_round, draft_number from all_nba_seasons where season = '2015-16'
+and team_abbreviation = 'POR'
+
+GO
+
+Select * from PortlandNBAdraft
+
+
+
+
+
+--#5. Create a view that takes the player_name, team_abbreviation, age, pts, reb, gp of the 2005-2006 San Antonio Spurs.  
+Create view SanAntonioSpurs2005 as
+Select player_name, team_abbreviation, age, pts, gp, reb from all_nba_seasons where team_abbreviation = 'SAS'
+and season = '2015-16'
+
+
+Select * from SanAntonioSpurs2005
+
+
+
+
+
+
+#6.  How many players were on each NBA team during the 1996-1997 NBA season?
+
+Select count(player_name) as Number_of_NBA_players, team_abbreviation from all_nba_seasons
+where season = '1996-97'
+group by team_abbreviation
+
+
+
+--#7. Which players on the Los Angeles Lakers during the 2001-2002 NBA season averaged between 20 to 30 pts per game?
+
+Select player_name, pts, season, team_abbreviation from all_nba_seasons where season = '2001-02' and team_abbreviation = 'LAL' and pts between 20 and 30; 
+
+
+
+
+
+
+--#8. How many players on the Houston Rockets were born in the USA that played on the 2011-2012 season?
+
+Select count(player_name) as Number_of_NBA_Players from all_nba_seasons where country = 'USA' and season = '2011-12' and team_abbreviation = 'HOU'
+
+
+
+--#9. Which players on either the Dallas Mavericks or Toronto Raptors scored between 20 to 30 points during the 2006-2007 NBA season?
+
+Select player_name, pts, season from all_nba_seasons where season = '2006-07' and pts between 20 and 30 and ( team_abbreviation = 'DAL' or team_abbreviation = 'TOR')
+
+
+
+--#10. List all of the players who played on the Toronto Raptors during the 2002-2003 Season whose name starts with the letter V
+
+Select player_name, team_abbreviation from all_nba_seasons where player_name like 'V%' and team_abbreviation = 'TOR' and season = '2002-03'
+
+
+
+
+--#11. What is the average age of players who played on the Miami Heat during the 2012-2013 NBA season?
+
+Select AVG(age) as AverageAge from all_nba_seasons where season = '2012-13' and team_abbreviation = 'MIA'
+
+
+
+--#12. Which players on the Boston Celtics or Orlando played atleast 50 games during the 2018-2019 regular season and scored between 15 to 25 points?
+
+Select player_name, gp, season, team_abbreviation, pts from all_nba_seasons where season = '2018-19' and (team_abbreviation = 'BOS' or team_abbreviation = 'ORL') and gp >= 50 and pts between 15 and 25;
+
+
+
+#13. Which players on the Indiana Pacers did not average between 10 to 20 points during the 2013-2014 NBA season?
+
+Select player_name, pts from all_nba_seasons where season = '2013-14' and team_abbreviation = 'IND' and pts not between 10 and 20
+
+
+
+
+-- #14. List all of the players whose last name ends with the letter N who played on the Chicago Bulls during the 1997-1998 NBA Season
+
+Select player_name from all_nba_seasons where player_name like '%N' and team_abbreviation = 'CHI' and season = '1997-98'
+
+
+
+
+--#15. Which players on the Houston Rockets during the 2017-2018 season had an age higher then 28? 
+
+Select player_name, team_abbreviation, age, season from all_nba_seasons where season = '2017-18' and team_abbreviation = 'HOU' group by player_name, team_abbreviation, age, season having age > 28;
+
+
+
+--#16. How many USA and Canadian born players are there in this dataset? Use the Case function. Group by country
+
+Select country,
+SUM(CASE 
+	When country = 'USA' then 1
+	When country = 'Canada' then 1
+	else 0
+END) as Number_of_USA_born_players
+
+from all_NBA_seasons
+group by country; 
+
+
+
+#17. Use the case function to analyze player_height for every player who plays on the Denver Nuggets or Los Angeles Lakers in this dataset during the 2019-2020 season.  Order by player name in ascending order. 
+-- If player height is lower then 190, list as "Below Normal Height"
+-- If player height is between 190 to 210, list as "Normal Height" 
+-- If player height is higher then 210, list as "Above Normal Height"
+
+Select distinct  player_name, team_abbreviation, season,  player_height,  
+
+(CASE 
+	When player_height < 190 then 'Below Normal Height'
+	When player_height between 190 and 210 then 'Normal Height'
+	When player_height > 210 then 'Above Normal Height'
+
+END) as player_height_category
+from all_NBA_seasons
+where (team_abbreviation = 'DEN' or team_abbreviation = 'LAL') and season = '2019-20'
+order by player_name asc;
+
+
+
+--#18. Use group by and order by function to determine how many NBA players in the NBA are from different countries during the 2006-2007 NBA season. 
+
+Select Count(country) as Number_of_NBA_players, country from all_nba_seasons where season  = '2006-07' group by country order by Number_of_NBA_players desc; 
+
+
+
+--#19. Which players on the Philadelphia 76ers played more then 60 games during the 2017-2018 NBA Season?
+
+Select player_name , team_abbreviation, season, gp from all_nba_seasons
+where season  = '2017-18' and team_abbreviation = 'PHI' and gp > 60
+group by  player_name , team_abbreviation, season, gp
+having gp > 60; 
+
+-- #20. Which player averaged the most amount of points during the 2010-2011 NBA Season
+
+Select pts, player_name, team_abbreviation, season from all_nba_seasons where season = '2010-11' and pts = (Select MAX(pts) from all_nba_seasons where season = '2010-11') 
+
+
+
+
+--#21. Which player played the most amount of games on the Toronto Raptors during the 2018-2019 NBA Season. 
+
+Select player_name, team_abbreviation, season, gp from all_nba_seasons where team_abbreviation = 'TOR' and season = '2018-19' and gp = (Select MAX(gp) from all_nba_seasons where team_abbreviation = 'TOR' and season = '2018-19')
+
+
+
+----#22. Which player played the least amount of games on the Toronto Raptors during the 2018-2019 NBA Season. 
+
+Select player_name, team_abbreviation, season, gp from all_nba_seasons where team_abbreviation = 'TOR' and season = '2018-19' and gp = (Select MIN(gp) from all_nba_seasons where team_abbreviation = 'TOR' and season = '2018-19')
+
+
+
+
+
+--#23. Which player had the averaged the highest amount of rebounds per game on the Miami Heat during the 2020-2021 season? Round rebound to 2 decimal places. 
+
+Select player_name, ROUND(reb,2) as Rebounds from all_nba_seasons where team_abbreviation = 'MIA' and season = '2020-21' and reb = (Select MAX(reb) from all_nba_seasons where team_abbreviation = 'MIA' and season = '2020-21') 
+
+
+
+
+
+
+--#24. State the player_name, college, draft_year of the players who were drafted from Kentucky, Oregon, or Gonzaga in the 2017 NBA draft. Use in the IN and Distinct function. 
+
+Select  distinct player_name, college, draft_year from all_nba_seasons where college IN ('Kentucky','Oregon','Gonzaga') and draft_year = '2017'
+
+
+
+
+--#25. State the player who was drafted first overall each year in this dataset. 
+Select draft_year, player_name, draft_number
+
+from all_nba_seasons
+where draft_number = '1'
+Group by draft_year, player_name, draft_number
+
+
+--#26. State the top 10 players who averaged the highest points per game  during the 2019-2020 on any NBA team. Order by points in descending order. Round points to 2 decimal places. 
+
+Select top 10 ROUND(pts,2) as Points, player_name, season from all_nba_seasons where season = '2019-20' Order by pts desc;  
+
+
+
+
+--#27. State the top 10 players in terms of most games played during the 2020-2021 NBA season. Order by GP in desc order; 
+
+Select top 10 gp as GamesPlayed, player_name, season from all_nba_seasons where season = '2020-21' order by gp desc; 
+
+
+
+-- #28. State the top 3 players on the Dallas Mavericks during the 2021-2022 NBA season that had the most rebounds. Order by rebounds in desc order; 
+Select top 3 Round(reb, 2) as Rebounds, player_name from all_nba_seasons where season = '2021-22' and team_abbreviation = 'DAL' Order by reb desc;  
+
+
+
+-- #29. List the points, player_name, and country of the top 5 NBA players in points who were not born in the USA who played during the 2020-2021 NBA season. Use the NOT IN function. Order by pts in desc order. Round points to 2 decimal places. 
+
+Select top 5 ROUND(pts,2) as Points, player_name, country from all_nba_seasons where country NOT IN('USA') and season = '2020-21' Order by pts desc; 
+
+
+--#30. List the player_name, team_abbreviation, college, gp, pts for any NBA player who played during the 2015-2016 NBA season that was drafted from Kentucky.  
+
+Select player_name, team_abbreviation, college, gp, pts, season from all_nba_seasons where college = ANY(Select college from all_nba_seasons  where college = 'Kentucky' and season = '2015-16') and season  = '2015-16'
+
+
+
+
+
+--#31. List the details for the NBA players who averaged the most amount of points during the 2013-2014 NBA season who was not drafted in the first round. 
+
+Select * from all_nba_seasons where season = '2013-14' and draft_round NOT IN('1') and pts = (Select MAX(pts) from all_nba_seasons where season = '2013-14' and draft_round NOT IN('1'))
+
+
+
+
+
+
+
